@@ -1,7 +1,7 @@
 import sys
 import os
 import pyodbc
-from flask import Flask, request, jsonify, render_template, url_for
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv  # Import dotenv to load environment variables
 from urllib.parse import quote as url_quote
@@ -10,7 +10,9 @@ from urllib.parse import quote as url_quote
 load_dotenv()
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
-CORS(app)  # Enables CORS for frontend integration
+
+# ✅ Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # ✅ Function to create a new database connection
 def get_db_connection():

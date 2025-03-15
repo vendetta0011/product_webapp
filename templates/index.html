@@ -70,6 +70,8 @@
     <ul id="productList"></ul>
 
     <script>
+        const apiBaseUrl = "https://productapp-c2auaubeaagucecs.centralindia-01.azurewebsites.net/products";
+
         document.getElementById("productForm").addEventListener("submit", async function(event) {
             event.preventDefault();
 
@@ -77,30 +79,43 @@
             let description = document.getElementById("description").value;
             let price = document.getElementById("price").value;
 
-            let response = await fetch("http://localhost:8000/products", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, description, price })
-            });
+            try {
+                let response = await fetch(apiBaseUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, description, price })
+                });
 
-            let result = await response.json();
-            alert(result.message);
-            getProducts();  // Refresh the list after adding
+                let result = await response.json();
+                alert(result.message);
+                getProducts();  // Refresh the list after adding
+            } catch (error) {
+                console.error("Error adding product:", error);
+                alert("Failed to add product. Please try again.");
+            }
         });
 
         async function getProducts() {
-            let response = await fetch("http://localhost:8000/products");
-            let products = await response.json();
+            try {
+                let response = await fetch(apiBaseUrl);
+                let products = await response.json();
 
-            let productList = document.getElementById("productList");
-            productList.innerHTML = "";
+                let productList = document.getElementById("productList");
+                productList.innerHTML = "";
 
-            products.forEach(product => {
-                let li = document.createElement("li");
-                li.textContent = `${product.name} - ${product.description} - $${product.price}`;
-                productList.appendChild(li);
-            });
+                products.forEach(product => {
+                    let li = document.createElement("li");
+                    li.textContent = `${product.name} - ${product.description} - $${product.price}`;
+                    productList.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                alert("Failed to fetch product list.");
+            }
         }
+
+        // Load products on page load
+        getProducts();
     </script>
 
 </body>
