@@ -4,6 +4,8 @@ import pyodbc
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv  # Import dotenv to load environment variables
+from urllib.parse import quote as url_quote
+
 
 # ✅ Load environment variables from .env file
 load_dotenv()
