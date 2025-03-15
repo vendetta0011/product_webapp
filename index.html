@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalogue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Add a Product</h2>
+    <form id="productForm">
+        <input type="text" id="name" placeholder="Product Name" required>
+        <input type="text" id="description" placeholder="Description" required>
+        <input type="number" id="price" placeholder="Price" required>
+        <button type="submit">Add Product</button>
+    </form>
+
+    <h2>Product List</h2>
+    <button onclick="getProducts()">Refresh List</button>
+    <ul id="productList"></ul>
+
+    <script>
+        document.getElementById("productForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            let name = document.getElementById("name").value;
+            let description = document.getElementById("description").value;
+            let price = document.getElementById("price").value;
+
+            let response = await fetch("http://localhost:8000/products", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, description, price })
+            });
+
+            let result = await response.json();
+            alert(result.message);
+            getProducts();  // Refresh the list after adding
+        });
+
+        async function getProducts() {
+            let response = await fetch("http://localhost:8000/products");
+            let products = await response.json();
+
+            let productList = document.getElementById("productList");
+            productList.innerHTML = "";
+
+            products.forEach(product => {
+                let li = document.createElement("li");
+                li.textContent = `${product.name} - ${product.description} - $${product.price}`;
+                productList.appendChild(li);
+            });
+        }
+    </script>
+
+</body>
+</html>
