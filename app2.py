@@ -1,16 +1,15 @@
 import sys
 import os
 import pyodbc
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, url_for
 from flask_cors import CORS
 from dotenv import load_dotenv  # Import dotenv to load environment variables
 from urllib.parse import quote as url_quote
 
-
 # ✅ Load environment variables from .env file
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)  # Enables CORS for frontend integration
 
 # ✅ Function to create a new database connection
@@ -50,10 +49,10 @@ def get_db_connection():
         print("❌ Database Connection Failed:", str(e))
         return None
 
-# ✅ Homepage Route
+# ✅ Serve index.html (Frontend)
 @app.route('/')
 def home():
-    return jsonify({"message": "Welcome to the Product Catalogue API! Use `/products` to interact."})
+    return render_template("index.html")  # Ensure index.html is inside 'templates' folder
 
 # ✅ Route to add a new product
 @app.route('/products', methods=['POST'])
