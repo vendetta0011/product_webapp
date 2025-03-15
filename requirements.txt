@@ -2,3 +2,5 @@ Flask==2.2.2
 Flask-Cors==3.0.10
 pyodbc==4.0.35
 python-dotenv==1.0.0
+Werkzeug==1.0.1
+
