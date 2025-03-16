@@ -224,7 +224,66 @@ def search_products():
             cursor.close()
         conn.close()
 
+@app.route('/')
+def home():
+    return render_template("index.html")
 
+# ✅ Get all products (Sorting supported)
+@app.route('/products', methods=['GET'])
+def list_products():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, description, price FROM Products")
+        rows = cursor.fetchall()
+
+        products = [{"id": row[0], "name": row[1], "description": row[2], "price": float(row[3])} for row in rows]
+        return jsonify(products)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        conn.close()
+
+# ✅ Sorting API
+@app.route('/products/sort', methods=['GET'])
+def sort_products():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    order = request.args.get("order", "")
+
+    # Mapping sorting order to SQL fields
+    order_mapping = {
+        "name": "name ASC",
+        "price_asc": "price ASC",
+        "price_desc": "price DESC"
+    }
+
+    if order not in order_mapping:
+        return jsonify({"error": "Invalid sorting order"}), 400
+
+    try:
+        cursor = conn.cursor()
+        query = f"SELECT id, name, description, price FROM Products ORDER BY {order_mapping[order]}"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+
+        products = [{"id": row[0], "name": row[1], "description": row[2], "price": float(row[3])} for row in rows]
+        return jsonify(products)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        conn.close()
 
 # ✅ Run Flask App
 if __name__ == '__main__':
