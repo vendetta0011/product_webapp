@@ -1,226 +1,215 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Catalogue</title>
-    
-    <!-- ✅ Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- ✅ FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
         body {
-            background-color: #f8f9fa;
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
         }
-        .container {
-            margin-top: 30px;
+        h2 {
+            color: #333;
         }
-        .card {
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        form {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #28a745;
+            color: white;
             border: none;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
         }
-        .card-title {
-            font-weight: bold;
+        button:hover {
+            background: #218838;
         }
-        .btn-sm {
-            font-size: 0.85rem;
-            padding: 5px 10px;
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 class="text-center mb-4">Product Catalogue</h2>
-    
-    <!-- ✅ Product Form -->
-    <div class="card p-3 mb-4">
-        <h4>Add a Product</h4>
-        <form id="productForm">
-            <div class="mb-2">
-                <input type="text" id="name" class="form-control" placeholder="Product Name" required>
-            </div>
-            <div class="mb-2">
-                <input type="text" id="description" class="form-control" placeholder="Description" required>
-            </div>
-            <div class="mb-2">
-                <input type="number" id="price" class="form-control" placeholder="Price" required>
-            </div>
-            <button type="submit" class="btn btn-success w-100">Add Product</button>
-        </form>
-    </div>
+    <h2>Add a Product</h2>
+    <form id="productForm">
+        <input type="text" id="name" placeholder="Product Name" required>
+        <input type="text" id="description" placeholder="Description" required>
+        <input type="number" id="price" placeholder="Price" required>
+        <button type="submit">Add Product</button>
+    </form>
+    <h2>Search Products</h2>
+    <input type="text" id="searchInput" placeholder="Search by name">
+    <button onclick="searchProducts()">Search</button>
+    <button onclick="getProducts()">Reset</button>
 
-    <!-- ✅ Search & Sorting -->
-    <div class="d-flex justify-content-between mb-3">
-        <input type="text" id="searchInput" class="form-control w-50" placeholder="Search by name">
-        <button class="btn btn-primary" onclick="searchProducts()">Search</button>
-        <button class="btn btn-secondary" onclick="getProducts()">Reset</button>
-    </div>
+    <h2>Product List</h2>
+    <button onclick="getProducts()">Refresh List</button>
+    <ul id="productList"></ul>
 
-    <div class="d-flex justify-content-between mb-3">
-        <select id="sortSelect" class="form-select w-50">
-            <option value="">Sort by</option>
-            <option value="name">Name (A-Z)</option>
-            <option value="price_asc">Price (Low to High)</option>
-            <option value="price_desc">Price (High to Low)</option>
-        </select>
-        <button class="btn btn-info" onclick="sortProducts()">Apply Sort</button>
-    </div>
+    <script>
+        const apiBaseUrl = "https://productapp-c2auaubeaagucecs.centralindia-01.azurewebsites.net/products";
 
-    <!-- ✅ Product List -->
-    <div class="row" id="productList"></div>
-</div>
+        document.getElementById("productForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
 
-<!-- ✅ Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            let name = document.getElementById("name").value;
+            let description = document.getElementById("description").value;
+            let price = document.getElementById("price").value;
 
-<script>
-    const apiBaseUrl = "https://productapp-c2auaubeaagucecs.centralindia-01.azurewebsites.net/products";
+            try {
+                let response = await fetch(apiBaseUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, description, price })
+                });
 
-    // ✅ Fetch Products
-    async function getProducts() {
-        try {
-            let response = await fetch(apiBaseUrl);
-            let products = await response.json();
-            displayProducts(products);
-        } catch (error) {
-            console.error("Error fetching products:", error);
-            alert("Failed to fetch product list.");
-        }
-    }
-
-    // ✅ Display Products
-    function displayProducts(products) {
-        let productList = document.getElementById("productList");
-        productList.innerHTML = "";
-
-        products.forEach(product => {
-            let productCard = `
-                <div class="col-md-4 mb-3">
-                    <div class="card p-3">
-                        <h5 class="card-title">${product.name}</h5>
-                        <p class="card-text">${product.description}</p>
-                        <p class="card-text fw-bold">$${product.price}</p>
-                        <div class="d-flex justify-content-between">
-                            <button class="btn btn-primary btn-sm" onclick="editProduct(${product.id}, '${product.name}', '${product.description}', ${product.price})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-            productList.innerHTML += productCard;
+                let result = await response.json();
+                alert(result.message);
+                getProducts();  // Refresh the list after adding
+            } catch (error) {
+                console.error("Error adding product:", error);
+                alert("Failed to add product. Please try again.");
+            }
         });
-    }
 
-    // ✅ Add Product
-    document.getElementById("productForm").addEventListener("submit", async function(event) {
-        event.preventDefault();
+        async function getProducts() {
+            try {
+                let response = await fetch(apiBaseUrl);
+                let products = await response.json();
 
-        let name = document.getElementById("name").value;
-        let description = document.getElementById("description").value;
-        let price = document.getElementById("price").value;
+                let productList = document.getElementById("productList");
+                productList.innerHTML = "";
 
-        try {
-            let response = await fetch(apiBaseUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, description, price })
-            });
+                products.forEach(product => {
+                     let li = document.createElement("li");
+                    li.innerHTML = `${product.name} - ${product.description} - $${product.price} 
+                        <button onclick="editProduct(${product.id}, '${product.name}', '${product.description}', ${product.price})" 
+                            style="margin-left:10px; background:blue; color:white; border:none; padding:5px; cursor:pointer;">
+                            Edit
+                        </button>
+                        <button onclick="deleteProduct(${product.id})" 
+                            style="margin-left:10px; background:red; color:white; border:none; padding:5px; cursor:pointer;">
+                            Delete
+                        </button>`;
 
-            let result = await response.json();
-            alert(result.message);
-            getProducts();
-        } catch (error) {
-            console.error("Error adding product:", error);
-            alert("Failed to add product.");
+                    productList.appendChild(li);
+                    });
+
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                alert("Failed to fetch product list.");
+            }
         }
-    });
+        async function deleteProduct(id) {
+            if (!confirm("Are you sure you want to delete this product?")) {
+                return;
+            }
 
-    // ✅ Delete Product
-    async function deleteProduct(id) {
-        if (!confirm("Are you sure you want to delete this product?")) return;
+            try {
+                let response = await fetch(`${apiBaseUrl}/${id}`, {
+                    method: "DELETE",
+                });
 
-        try {
-            let response = await fetch(`${apiBaseUrl}/${id}`, { method: "DELETE" });
-            let result = await response.json();
-            alert(result.message);
-            getProducts();
-        } catch (error) {
-            console.error("Error deleting product:", error);
-            alert("Failed to delete product.");
+                let result = await response.json();
+                alert(result.message);
+                getProducts();  // Refresh the list after deletion
+            } catch (error) {
+                console.error("Error deleting product:", error);
+                alert("Failed to delete product.");
+            }
         }
-    }
+        async function editProduct(id, currentName, currentDescription, currentPrice) {
+            let newName = prompt("Enter new name:", currentName);
+            let newDescription = prompt("Enter new description:", currentDescription);
+            let newPrice = prompt("Enter new price:", currentPrice);
 
-    // ✅ Edit Product
-    async function editProduct(id, currentName, currentDescription, currentPrice) {
-        let newName = prompt("Enter new name:", currentName);
-        let newDescription = prompt("Enter new description:", currentDescription);
-        let newPrice = prompt("Enter new price:", currentPrice);
+            if (!newName || !newDescription || !newPrice) {
+                alert("All fields are required!");
+                return;
+            }
 
-        if (!newName || !newDescription || !newPrice) {
-            alert("All fields are required!");
-            return;
-        }
+            try {
+                let response = await fetch(`${apiBaseUrl}/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: newName, description: newDescription, price: newPrice })
+                });
 
-        try {
-            let response = await fetch(`${apiBaseUrl}/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: newName, description: newDescription, price: newPrice })
-            });
-
-            let result = await response.json();
-            alert(result.message);
-            getProducts();
-        } catch (error) {
-            console.error("Error updating product:", error);
-            alert("Failed to update product.");
-        }
-    }
-
-    // ✅ Search Products
-    async function searchProducts() {
-        let query = document.getElementById("searchInput").value.trim();
-        if (!query) {
-            alert("Please enter a search term.");
-            return;
+                let result = await response.json();
+                alert(result.message);
+                getProducts();  // Refresh the list after updating
+            } catch (error) {
+                console.error("Error updating product:", error);
+                alert("Failed to update product.");
+            }
         }
 
-        try {
-            let response = await fetch(`${apiBaseUrl}/search?q=${query}`);
-            let products = await response.json();
-            displayProducts(products);
-        } catch (error) {
-            console.error("Error searching products:", error);
-            alert("Failed to search for products.");
+        async function searchProducts() {
+            let query = document.getElementById("searchInput").value.trim();
+
+            if (!query) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            try {
+                let response = await fetch(`${apiBaseUrl}/search?q=${query}`);
+                let products = await response.json();
+
+                if (products.error) {
+                    alert(products.error);
+                    return;
+                }
+
+                let productList = document.getElementById("productList");
+                productList.innerHTML = "";
+
+                products.forEach(product => {
+                    let li = document.createElement("li");
+                    li.innerHTML = `${product.name} - ${product.description} - $${product.price}`;
+                    productList.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error("Error searching products:", error);
+                alert("Failed to search for products.");
+            }
         }
-    }
 
-    // ✅ Sorting Products
-    async function sortProducts() {
-        let sortBy = document.getElementById("sortSelect").value;
-        if (!sortBy) return;
+        
 
-        try {
-            let response = await fetch(`${apiBaseUrl}/sort?order=${sortBy}`);
-            let products = await response.json();
-            displayProducts(products);
-        } catch (error) {
-            console.error("Error sorting products:", error);
-            alert("Failed to sort products.");
-        }
-    }
-
-    // ✅ Load products on page load
-    getProducts();
-</script>
+        // Load products on page load
+        getProducts();
+    </script>
 
 </body>
 </html>
+
