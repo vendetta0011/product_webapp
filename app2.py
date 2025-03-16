@@ -192,6 +192,38 @@ def update_product(product_id):
             cursor.close()
         conn.close()
 
+# ✅ Route to search products by name
+@app.route('/products/search', methods=['GET'])
+def search_products():
+    query = request.args.get('q', '')
+
+    if not query:
+        return jsonify({"error": "Search query is required"}), 400
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, description, price FROM Products WHERE name LIKE ?", (f"%{query}%",))
+        rows = cursor.fetchall()
+
+        products = [
+            {"id": row[0], "name": row[1], "description": row[2], "price": float(row[3])}
+            for row in rows
+        ]
+
+        return jsonify(products)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        conn.close()
+
 
 
 # ✅ Run Flask App

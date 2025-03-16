@@ -64,6 +64,10 @@
         <input type="number" id="price" placeholder="Price" required>
         <button type="submit">Add Product</button>
     </form>
+    <h2>Search Products</h2>
+    <input type="text" id="searchInput" placeholder="Search by name">
+    <button onclick="searchProducts()">Search</button>
+    <button onclick="getProducts()">Reset</button>
 
     <h2>Product List</h2>
     <button onclick="getProducts()">Refresh List</button>
@@ -164,6 +168,38 @@
             } catch (error) {
                 console.error("Error updating product:", error);
                 alert("Failed to update product.");
+            }
+        }
+
+        async function searchProducts() {
+            let query = document.getElementById("searchInput").value.trim();
+
+            if (!query) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            try {
+                let response = await fetch(`${apiBaseUrl}/search?q=${query}`);
+                let products = await response.json();
+
+                if (products.error) {
+                    alert(products.error);
+                    return;
+                }
+
+                let productList = document.getElementById("productList");
+                productList.innerHTML = "";
+
+                products.forEach(product => {
+                    let li = document.createElement("li");
+                    li.innerHTML = `${product.name} - ${product.description} - $${product.price}`;
+                    productList.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error("Error searching products:", error);
+                alert("Failed to search for products.");
             }
         }
 
