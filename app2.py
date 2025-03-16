@@ -151,6 +151,48 @@ def delete_product(product_id):
             cursor.close()
         conn.close()
 
+# ✅ Route to update an existing product
+@app.route('/products/<int:product_id>', methods=['PUT'])
+def update_product(product_id):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        data = request.json
+        print(f"📥 Updating product {product_id} with data: {data}")  # Debug log
+
+        # Check if required fields exist
+        if not all(k in data for k in ("name", "description", "price")):
+            print("❌ Missing fields in request:", data)
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Convert price to float (Fixing type issues)
+        data['price'] = float(data['price'])
+
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE Products SET name=?, description=?, price=? WHERE id=?",
+            (data['name'], data['description'], data['price'], product_id)
+        )
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Product not found"}), 404
+
+        print(f"✅ Product {product_id} updated successfully")
+        return jsonify({"message": "Product updated successfully"}), 200
+
+    except Exception as e:
+        print("❌ Error in /products/<id> route:", str(e))
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        conn.close()
+
+
 
 # ✅ Run Flask App
 if __name__ == '__main__':
