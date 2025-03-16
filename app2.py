@@ -224,33 +224,6 @@ def search_products():
             cursor.close()
         conn.close()
 
-@app.route('/')
-def home():
-    return render_template("index.html")
-
-# ✅ Get all products (Sorting supported)
-@app.route('/products', methods=['GET'])
-def list_products():
-    conn = get_db_connection()
-    if not conn:
-        return jsonify({"error": "Database connection failed"}), 500
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, name, description, price FROM Products")
-        rows = cursor.fetchall()
-
-        products = [{"id": row[0], "name": row[1], "description": row[2], "price": float(row[3])} for row in rows]
-        return jsonify(products)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if 'cursor' in locals():
-            cursor.close()
-        conn.close()
-
-# ✅ Sorting API
 # ✅ Run Flask App
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8000))  # Default to port 8000
