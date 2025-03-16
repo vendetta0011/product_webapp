@@ -105,12 +105,33 @@
 
                 products.forEach(product => {
                     let li = document.createElement("li");
-                    li.textContent = `${product.name} - ${product.description} - $${product.price}`;
+                    li.innerHTML = `${product.name} - ${product.description} - $${product.price} 
+                        <button onclick="deleteProduct(${product.id})" style="margin-left:10px; background:red; color:white; border:none; padding:5px; cursor:pointer;">Delete</button>`;
+
                     productList.appendChild(li);
                 });
+
             } catch (error) {
                 console.error("Error fetching products:", error);
                 alert("Failed to fetch product list.");
+            }
+        }
+        async function deleteProduct(id) {
+            if (!confirm("Are you sure you want to delete this product?")) {
+                return;
+            }
+
+            try {
+                let response = await fetch(`${apiBaseUrl}/${id}`, {
+                    method: "DELETE",
+                });
+
+                let result = await response.json();
+                alert(result.message);
+                getProducts();  // Refresh the list after deletion
+            } catch (error) {
+                console.error("Error deleting product:", error);
+                alert("Failed to delete product.");
             }
         }
 

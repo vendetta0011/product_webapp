@@ -12,7 +12,7 @@ load_dotenv()
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
 # ✅ Enable CORS for all routes
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
 
 # ✅ Function to create a new database connection
 def get_db_connection():
@@ -124,6 +124,33 @@ def list_products():
         if 'cursor' in locals():
             cursor.close()
         conn.close()
+
+# ✅ Route to delete a product by ID
+@app.route('/products/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM Products WHERE id = ?", (product_id,))
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Product not found"}), 404
+
+        conn.commit()
+        print(f"✅ Product {product_id} deleted successfully")
+        return jsonify({"message": "Product deleted successfully"}), 200
+
+    except Exception as e:
+        print("❌ Error in /products DELETE route:", str(e))
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        conn.close()
+
 
 # ✅ Run Flask App
 if __name__ == '__main__':
