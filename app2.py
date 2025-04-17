@@ -5,10 +5,19 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv  # Import dotenv to load environment variables
 from urllib.parse import quote as url_quote
+from azure.monitor.opentelemetry import configure_azure_monitor
+
+# Enable Azure Monitor Live Metrics
+
+
 
 # ✅ Load environment variables from .env file
 load_dotenv()
 
+configure_azure_monitor(
+    connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"),
+    enable_live_metrics=True
+)
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
 # ✅ Enable CORS for all routes
